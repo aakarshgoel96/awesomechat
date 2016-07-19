@@ -1,0 +1,323 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Awesome chat</title>
+    <style>
+      #chat{ margin: 0; padding: 0; box-sizing: border-box;border:1px #000 solid; }
+      #chat{ font: 13px Helvetica, Arial; background-color: rgba(195, 195, 195, 0.41);}
+      #chat { list-style-type: none; margin: 0; padding: 0; height:400px; width:500px;overflow:auto;}
+      #chat li { padding: 5px 10px; word-wrap: break-word;}
+      #chat li:nth-child(odd) { background: #eee; }
+	  #pchat{ margin: 0; padding: 0; box-sizing: border-box;border:1px #000 solid; }
+      #pchat{ font: 13px Helvetica, Arial; background-color: rgba(195, 195, 195, 0.41);}
+      #pchat { list-style-type: none; margin: 0; padding: 0; height:380px;width:500px;overflow:auto;}
+      #pchat li { padding: 5px 10px; word-wrap: break-word; }
+      #pchat li:nth-child(odd) { background: #eee; }
+	  #chatWrap{float:left; }
+	  #pchatWrap{float:right;}
+	  #contentWrap{display:none;}
+	  #title{margin-top: 0px;margin-bottom: 0px;font-family: Rockwell;font-size: 45px;text-align:center;color:#333;}
+	  .error{color:red;}
+	  .whisper{color:gray;font-style:italic;}
+  .loader {
+  border: 16px solid #f3f3f3;
+  border-radius: 50%;
+  border-top: 16px solid blue;
+  border-bottom: 16px solid blue;
+  width: 120px;
+  height: 120px;
+  -webkit-animation: spin 2s linear infinite;
+  animation: spin 2s linear infinite;
+}
+
+@-webkit-keyframes spin {
+  0% { -webkit-transform: rotate(0deg); }
+  100% { -webkit-transform: rotate(360deg); }
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+    </style>
+	<link rel="stylesheet" type="text/css" href="css/jquery.emojipicker.css">
+	<script type="text/javascript" src="https://code.jquery.com/jquery-1.11.2.min.js"></script>
+  <script type="text/javascript" src="js/jquery.emojipicker.js"></script>
+  <script type="text/javascript" src="js/jquery-1.11.1.js"></script>
+  <!-- Emoji Data -->
+  <link rel="stylesheet" type="text/css" href="css/jquery.emojipicker.tw.css">
+  <script type="text/javascript" src="js/jquery.emojis.js"></script>
+
+  <script type="text/javascript">
+    $(document).ready(function(e) {
+
+      $('#input-default').emojiPicker();
+
+      $('#input-custom-size').emojiPicker({
+        width: '300px',
+        height: '200px'
+      });
+
+      $('#input-left-position').emojiPicker({
+        position: 'left'
+      });
+
+      $('#create').click(function(e) {
+        e.preventDefault();
+        $('#text-custom-trigger').emojiPicker({
+          width: '300px',
+          height: '200px',
+          button: false
+        });
+      });
+
+      $('#toggle').click(function(e) {
+        e.preventDefault();
+        $('#text-custom-trigger').emojiPicker('toggle');
+      });
+
+      $('#destroy').click(function(e) {
+        e.preventDefault();
+        $('#text-custom-trigger').emojiPicker('destroy');
+      })
+
+      // keyup event is fired
+      $(".emojiable-question, .emojiable-option").on("keyup", function () {
+        //console.log("emoji added, input val() is: " + $(this).val());
+      });
+
+    });
+  </script>
+
+  </head>
+  <body style="background-color:rgb(228, 231, 231)">
+    <h1 id="title">AweSome ChaT!!</h1>
+    <div id="nickWrap">
+	<p> Enter a Username </p>
+	<p id="nickError"></p>
+	<form id="setNick">
+	<input size="35" id="nickname" ></input>
+	<input type="submit"></input>
+	</form>
+	</div>
+    <div id="contentWrap">
+	<div id="chatWrap">
+	<h1>Common chat room</h1>
+	
+    <form id="chatform" action="">
+	<div id="chat"></div>
+      <input id="m" autocomplete="off" class="emojiable-option" /><button>Send</button>
+    </form>
+	<input id="uploadfile" type="file" />
+	</div>
+	<div id="pchatWrap">
+	<h1>Private chat room</h1>
+	
+    <form id="pchatform" action="">
+	<!--nickname:<input  id="pnick" style=" margin-left:auto;margin-right:auto;"  />-->
+	Users Online<select  id="pnick" style=" margin-left:auto;margin-right:auto;" ></select>
+	<div id="pchat"></div>
+      <input id="pm" autocomplete="off" class="emojiable-option" /><button>Send</button>
+    </form>
+	<input id="puploadfile" type="file" />
+	</div>
+	<div style=" margin-left:auto;margin-right:auto;">
+	<div id="users" style=" margin-left:auto;margin-right:auto;"> ></div>
+	</div>
+	</div>
+    <script src="js/socket.io-1.2.0.js"></script>
+    <script src="js/jquery-1.11.1.js"></script>
+    <script>
+
+      var socket = io();
+      $('#setNick').submit(function(e){
+        e.preventDefault();
+        socket.emit('new user', $('#nickname').val(),function(data){
+        if(data){
+        $('#nickWrap').hide();
+        $('#contentWrap').show();
+		$('.emoji-picker-icon').show();
+        }
+        else{
+        $('#nickError').html('That username is already taken try again...');
+        }
+        });
+        $('#nickname').val('');
+      });
+	  socket.on('usernames', function(data){
+        
+		var html= '';
+		var pnick=$('#pnick');
+       for(i=0;i<data.users.length;i++)
+       {
+        html+= data.users[i]+'<br/>';
+       }
+        $('#users').html(html);
+		pnick.empty();
+		$.each(data.users, function(key, value) { 
+		
+     pnick.append($("<option></option>")
+                    .attr("value",value)
+                    .text(value)); 
+					
+			
+});
+      });
+      $('#chatform').submit(function(data){
+        socket.emit('chat message', $('#m').val(),function(data){
+		$('#chat').append($('<li>').html('<span class="error">'+data+'</span>'));
+		var myDiv = $("#chat li").get(0);
+        myDiv.animate({
+        scrollTop: myDiv.scrollHeight
+        }, 500);
+		});
+        $('#m').val('');
+        return false;
+      });
+	  
+	  $('#pchatform').submit(function(data){
+	  var msg ={};
+        msg.pnick = $('#pnick').val();
+		console.log(msg.pnick);
+        msg.pmsg = $('#pm').val();
+        socket.emit('pchat message', msg,function(data){
+		$('#pchat').append($('<li>').html('<span class="error">'+data+'</span>'));
+		});
+        $('#pm').val('');
+        return false;
+      });
+      socket.on('new message', function(data){
+        displayMsg(data);
+      });
+	  socket.on('load old msgs',function(docs){
+	  for(var i=0; i<docs.length ; i++)
+	  {
+      if(docs[i].file===undefined){
+	  displayMsg(docs[i]);
+      }
+      else
+      {
+        displayFile(docs[i]);
+      }
+	  }
+	  });
+    socket.on('load old pmsgs',function(pdocs){
+    for(var i=0; i<pdocs.length ; i++)
+    {
+      if(pdocs[i].file===undefined){
+     $('#pchat').append($('<li>').html('<span class="pwhisper"><b>'+pdocs[i].nickfrom+': </b>'+pdocs[i].msg+'</span>'));
+      }
+      else
+      {
+       displaypFile(pdocs[i]);
+      }
+    }
+    });
+    function displaypFile(data)
+    {
+      if(data.fileType.split('/')[0]=='image'){
+    console.log("image");
+    $('#pchat').append($('<li>').html('<b>'+data.nickfrom+': </b><br/>'+"<img src='"+data.file+"'height='200px' width='200px' alt="+data.fileName+">"));
+    $('#puploadfile').val('');
+    }
+    else if(data.fileType.split('/')[0]=='video')
+    {
+    console.log("image");
+    $('#pchat').append($('<li>').html('<b>'+data.nickfrom+': </b><br/>'+"<video controls src='"+data.file+"'height='200px' width='200px' alt="+data.fileName+">"));
+    $('#puploadfile').val('');
+    }
+    else{
+        $('#pchat').append($('<li>').html('<b>'+data.nickfrom+': </b>'+"<a target='_blank' download='" + data.fileName +"' href='"+data.file+"'>"+data.fileName+"</a>"));
+    $('#puploadfile').val('');
+    }
+    }
+	  function displayMsg(data){
+	  $('#chat').append($('<li>').html('<span class="msg"><b>'+data.nick+': </b>'+data.msg+'</span>'));
+	  }
+    function displayFile(data){
+    if(data.fileType.split('/')[0]=='image')
+    {
+    console.log("image");
+    $('#chat').append($('<li>').html('<b>'+data.nick+': </b><br/>'+"<img src='"+data.file+"'height='200px' width='200px' alt="+data.fileName+">"));
+    $('#uploadfile').val('');
+    }
+    else if(data.fileType.split('/')[0]=='video')
+    {
+    console.log("image");
+    $('#chat').append($('<li>').html('<b>'+data.nick+': </b><br/>'+"<video controls src='"+data.file+"'height='200px' width='200px' alt="+data.fileName+">"));
+    $('#uploadfile').val('');
+    }
+    else{
+        $('#chat').append($('<li>').html('<b>'+data.nick+': </b>'+"<a target='_blank' download='" + data.fileName +"' href='"+data.file+"'>"+data.fileName+"</a>"));
+    $('#uploadfile').val('');
+    }
+    }
+	  socket.on('whisper', function(data){
+        $('#chat').append($('<li>').html('<span class="whisper"><b>'+data.nick+': </b>'+data.msg+'</span>'));
+      });
+	  socket.on('pwhisper', function(data){
+        $('#pchat').append($('<li>').html('<span class="pwhisper"><b>'+data.nick+': </b>'+data.msg+'</span>'));
+      });
+	  socket.on('base64 file', function(data){
+	    displayFile(docs[i]);
+      });
+	  socket.on('pbase64 file', function(data){
+	  
+        if(data.fileType.split('/')[0]=='image')
+		{
+		console.log("image");
+		$('#pchat').append($('<li>').html('<b>'+data.username+': </b><br/>'+"<img src='"+data.file+"'height='200px' width='200px' alt="+data.fileName+">"));
+		$('#puploadfile').val('');
+		}
+		else if(data.fileType.split('/')[0]=='video')
+		{
+		console.log("image");
+		$('#pchat').append($('<li>').html('<b>'+data.username+': </b><br/>'+"<video controls src='"+data.file+"'height='200px' width='200px' alt="+data.fileName+">"));
+		$('#puploadfile').val('');
+		}
+		else{
+        $('#pchat').append($('<li>').html('<b>'+data.username+': </b>'+"<a target='_blank' download='" + data.fileName +"' href='"+data.file+"'>"+data.fileName+"</a>"));
+		$('#puploadfile').val('');
+		}
+      });
+	  socket.on('fileerror', function(data){
+$('#pchat').append($('<li>').html('<span class="error">'+data.error+'</span>'));
+      });
+	  $('#uploadfile').bind('change', function(e){
+    var data = e.originalEvent.target.files[0];
+    readThenSendFile(data);      
+});
+function readThenSendFile(data){
+
+    var reader = new FileReader();
+    reader.onload = function(evt){
+        var msg ={};
+        msg.file = evt.target.result;
+        msg.fileName = data.name;
+		msg.fileType=data.type;
+        socket.emit('base64 file', msg);
+    };
+    reader.readAsDataURL(data);
+}
+ $('#puploadfile').bind('change', function(e){
+    var data = e.originalEvent.target.files[0];
+    preadThenSendFile(data);      
+});
+function preadThenSendFile(data){
+
+    var reader = new FileReader();
+    reader.onload = function(evt){
+        var msg ={};
+		msg.pnick=$('#pnick').val();
+        msg.file = evt.target.result;
+        msg.fileName = data.name;
+		msg.fileType=data.type;
+        socket.emit('pbase64 file', msg);
+		$('#puploadfile').val('');
+    };
+    reader.readAsDataURL(data);
+	
+}
+    </script>
+  </body>
+</html>
