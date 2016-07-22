@@ -41,7 +41,7 @@
 }
     </style>
 	<link rel="stylesheet" type="text/css" href="css/jquery.emojipicker.css">
-	<script type="text/javascript" src="https://code.jquery.com/jquery-1.11.2.min.js"></script>
+	<script type="text/javascript" src="js/jquery-1.11.2.min.js"></script>
   <script type="text/javascript" src="js/jquery.emojipicker.js"></script>
   <script type="text/javascript" src="js/jquery-1.11.1.js"></script>
   <!-- Emoji Data -->
@@ -128,7 +128,7 @@
     <script src="js/socket.io-1.2.0.js"></script>
     <script src="js/jquery-1.11.1.js"></script>
     <script>
-
+     cuser="";
       var socket = io();
       $('#setNick').submit(function(e){
         e.preventDefault();
@@ -144,32 +144,36 @@
         });
         $('#nickname').val('');
       });
+       socket.on('cuser', function(data){
+         window.cuser = data.cuser;
+    console.log(data.cuser);
+      
+     });
 	  socket.on('usernames', function(data){
-        
 		var html= '';
 		var pnick=$('#pnick');
-       for(i=0;i<data.users.length;i++)
+      /* for(i=0;i<data.users.length;i++)
        {
+        console.log(window.cuser);
+        if(data.users[i]!=window.cuser)
         html+= data.users[i]+'<br/>';
-       }
-        $('#users').html(html);
+       }*/
+        $('#users').html('<b>Current User : </b>'+window.cuser);
 		pnick.empty();
 		$.each(data.users, function(key, value) { 
-		
+		     if(value!=window.cuser){
      pnick.append($("<option></option>")
                     .attr("value",value)
                     .text(value)); 
 					
-			
+			}
 });
+    
       });
       $('#chatform').submit(function(data){
         socket.emit('chat message', $('#m').val(),function(data){
 		$('#chat').append($('<li>').html('<span class="error">'+data+'</span>'));
-		var myDiv = $("#chat li").get(0);
-        myDiv.animate({
-        scrollTop: myDiv.scrollHeight
-        }, 500);
+		$('#chat').scrollTop($('#chat')[0].scrollHeight);
 		});
         $('#m').val('');
         return false;
@@ -202,8 +206,10 @@
 	  }
 	  });
     socket.on('load old pmsgs',function(pdocs){
+       $('#pchat').empty();
     for(var i=0; i<pdocs.length ; i++)
     {
+      if($('#pnick').val()==pdocs[i].nickfrom || $('#pnick').val()==pdocs[i].nickto){
       if(pdocs[i].file===undefined){
      $('#pchat').append($('<li>').html('<span class="pwhisper"><b>'+pdocs[i].nickfrom+': </b>'+pdocs[i].msg+'</span>'));
       }
@@ -212,7 +218,12 @@
        displaypFile(pdocs[i]);
       }
     }
+    }
     });
+    $('#pnick').on('change', function() {
+      console.log("changed");
+       socket.emit("changerequest");
+     });
     function displaypFile(data)
     {
       if(data.fileType.split('/')[0]=='image'){
@@ -318,6 +329,7 @@ function preadThenSendFile(data){
     reader.readAsDataURL(data);
 	
 }
+
     </script>
   </body>
 </html>

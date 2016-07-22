@@ -12,6 +12,9 @@ app.get('/', function(req, res){
 app.get('/js/jquery-1.11.1.js', function(req, res){
   res.sendFile(__dirname + '/js/jquery-1.11.1.js');
 });
+app.get('/js/jquery-1.11.2.min.js', function(req, res){
+  res.sendFile(__dirname + '/js/jquery-1.11.2.min.js');
+});
 app.get('/js/socket.io-1.2.0.js', function(req, res){
   res.sendFile(__dirname + '/js/socket.io-1.2.0.js');
 });
@@ -92,14 +95,25 @@ io.sockets.on('connection', function(socket){
     if (err) throw err;
     console.log('Sending old pmessages');
     socket.emit('load old pmsgs',pdocs);
-    console.log(pdocs);
   });
+
+     if(users[socket.nickname] !== undefined)
+ users[socket.nickname].emit('cuser', {cuser:socket.nickname, users:Object.keys(users)});
     updateNicknames();
    }
     });
+   socket.on('changerequest',function(){
+      var pquery= pchat.find({$or:[{"nickfrom":socket.nickname},{"nickto":socket.nickname}]});
+    pquery.sort("created").exec({},function(err,pdocs){
+    if (err) throw err;
+    console.log('Sending old pmessages');
+    socket.emit('load old pmsgs',pdocs);
+  });
+    });
  function updateNicknames(){
- io.sockets.emit('usernames', {cuser:'', users:Object.keys(users)});
- //users[socket.nickname].emit('usernames', {cuser:socket.nickname, users:Object.keys(users)});
+
+ io.sockets.emit('usernames', { users:Object.keys(users)});
+ 
 }
   socket.on('chat message', function(data,callback){
 	  var msg=data.trim();
