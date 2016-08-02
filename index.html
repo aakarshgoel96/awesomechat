@@ -5,18 +5,45 @@
     <style>
       #chat{ margin: 0; padding: 0; box-sizing: border-box;border:1px #000 solid; }
       #chat{ font: 13px Helvetica, Arial; background-color: rgba(195, 195, 195, 0.41);}
-      #chat { list-style-type: none; margin: 0; padding: 0; height:400px; width:500px;overflow:auto;}
+      #chat { list-style-type: none; margin: 0; padding: 0; height:380px; width:500px;overflow:auto;}
       #chat li { padding: 5px 10px; word-wrap: break-word;}
       #chat li:nth-child(odd) { background: #eee; }
+       #userwrap{ margin: 0; padding: 0; box-sizing: border-box;border:1px #000 solid; }
+      #userwrap{ font: 13px Helvetica, Arial; background-color: rgba(195, 195, 195, 0.41);}
+      #userwrap { list-style-type: none; margin: 0; padding: 0; height:380px; width:250px;overflow:auto;}
+      #userwrap li { padding: 5px 10px; word-wrap: break-word;}
+      #userwrap li:nth-child(odd) { background: #eee; }
 	  #pchat{ margin: 0; padding: 0; box-sizing: border-box;border:1px #000 solid; }
       #pchat{ font: 13px Helvetica, Arial; background-color: rgba(195, 195, 195, 0.41);}
       #pchat { list-style-type: none; margin: 0; padding: 0; height:380px;width:500px;overflow:auto;}
       #pchat li { padding: 5px 10px; word-wrap: break-word; }
       #pchat li:nth-child(odd) { background: #eee; }
 	  #chatWrap{float:left; }
+    #commonusers{position:absolute; left:550px; top:110px;height:500px;width:250px;}
 	  #pchatWrap{float:right;}
 	  #contentWrap{display:none;}
 	  #title{margin-top: 0px;margin-bottom: 0px;font-family: Rockwell;font-size: 45px;text-align:center;color:#333;}
+    #dragandrophandler
+{
+border:2px dotted #0B85A1;
+width:400px;
+color:#92AAB0;
+text-align:left;vertical-align:middle;
+padding:10px 10px 10 10px;
+margin-bottom:10px;
+font-size:200%;
+}
+
+#pdragandrophandler
+{
+border:2px dotted #0B85A1;
+width:400px;
+color:#92AAB0;
+text-align:left;vertical-align:middle;
+padding:10px 10px 10 10px;
+margin-bottom:10px;
+font-size:200%;
+}
 	  .error{color:red;}
 	  .whisper{color:gray;font-style:italic;}
   .loader {
@@ -40,10 +67,18 @@
   100% { transform: rotate(360deg); }
 }
     </style>
+    <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+  <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+
+   <!-- <link rel="stylesheet" href="css/bootstrap.min.css">
+    <script src="js/jquery.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>-->
+    
 	<link rel="stylesheet" type="text/css" href="css/jquery.emojipicker.css">
-	<script type="text/javascript" src="js/jquery-1.11.2.min.js"></script>
+	<!--<script type="text/javascript" src="js/jquery-1.11.2.min.js"></script>-->
   <script type="text/javascript" src="js/jquery.emojipicker.js"></script>
-  <script type="text/javascript" src="js/jquery-1.11.1.js"></script>
+ <!-- <script type="text/javascript" src="js/jquery-1.11.1.js"></script>-->
   <!-- Emoji Data -->
   <link rel="stylesheet" type="text/css" href="css/jquery.emojipicker.tw.css">
   <script type="text/javascript" src="js/jquery.emojis.js"></script>
@@ -87,93 +122,252 @@
       });
 
     });
+    $(document).on('dragenter', function (e) 
+{
+    e.stopPropagation();
+    e.preventDefault();
+});
+$(document).on('dragover', function (e) 
+{
+  e.stopPropagation();
+  e.preventDefault();
+  obj.css('border', '2px dotted #0B85A1');
+});
+$(document).on('drop', function (e) 
+{
+    e.stopPropagation();
+    e.preventDefault();
+});
   </script>
 
   </head>
   <body style="background-color:rgb(228, 231, 231)">
     <h1 id="title">AweSome ChaT!!</h1>
     <div id="nickWrap">
-	<p> Enter a Username </p>
+	<p> Login </p>
 	<p id="nickError"></p>
 	<form id="setNick">
-	<input size="35" id="nickname" ></input>
+	Username<input size="35" id="nickname"><br/></input>
+  Password<input size="35" id="pass" type="password"><br/></input>
 	<input type="submit"></input>
 	</form>
 	</div>
     <div id="contentWrap">
 	<div id="chatWrap">
 	<h1>Common chat room</h1>
-	
-    <form id="chatform" action="">
+	<form id="chatform" action="">
+    Groups<select  id="group"  style=" margin-left:auto;margin-right:auto;"  >
+  <option selected>Common group</option>
+</select>
 	<div id="chat"></div>
       <input id="m" autocomplete="off" class="emojiable-option" /><button>Send</button>
     </form>
 	<input id="uploadfile" type="file" />
+  <button type="button"  data-toggle="modal" data-target="#myModal">New Group</button>
+<form id="newgroup" action="">
+<!-- Modal -->
+<div id="myModal" class="modal fade" role="dialog">
+  <div class="modal-dialog">
+
+    <!-- Modal content-->
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title">Create New Group</h4>
+      </div>
+      <div class="modal-body" >
+        <p>Enter group name</p>
+        <input type="text" class="form-control" id="newgroupname">
+        <div id="group-body"></div>
+        </div>
+      <div class="modal-footer">
+        <button type="submit" class="btn btn-default" >Submit</button>
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+
+      </div>
+    </div>
+
+  </div>
+
+</div>
+</form>
+ <button type="button"  data-toggle="modal" data-target="#editModal">Add Group Members </button>
+<form id="editgroup" action="">
+<!-- Modal -->
+<div id="editModal" class="modal fade" role="dialog">
+  <div class="modal-dialog">
+
+    <!-- Modal content-->
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title">Add Group Members</h4>
+      </div>
+      <div class="modal-body" >
+        <p>Choose group members</p>
+        <div class="checkbox" id="membercheck">
+        </div>
+        <div id="groupmembers-body"></div>
+        </div>
+      <div class="modal-footer">
+        <button type="submit" class="btn btn-default" >Submit</button>
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+
+      </div>
+    </div>
+
+  </div>
+
+</div>
+</form>
+
+  <div id="dragandrophandler">Drag & Drop Files Here
+  </div>
 	</div>
+  <div id="commonusers">
+  <p> Users</p>
+  <div id="userwrap">
+  </div>  
+  </div>
 	<div id="pchatWrap">
 	<h1>Private chat room</h1>
 	
     <form id="pchatform" action="">
 	<!--nickname:<input  id="pnick" style=" margin-left:auto;margin-right:auto;"  />-->
-	Users Online<select  id="pnick" style=" margin-left:auto;margin-right:auto;" ></select>
+	Users Online<select  id="pnick"  style=" margin-left:auto;margin-right:auto;" >
+  <option selected>Select a user</option>
+</select>
 	<div id="pchat"></div>
       <input id="pm" autocomplete="off" class="emojiable-option" /><button>Send</button>
     </form>
 	<input id="puploadfile" type="file" />
+  <div id="pdragandrophandler"> Drag & Drop Files Here </div>
 	</div>
 	<div style=" margin-left:auto;margin-right:auto;">
 	<div id="users" style=" margin-left:auto;margin-right:auto;"> ></div>
 	</div>
 	</div>
     <script src="js/socket.io-1.2.0.js"></script>
-    <script src="js/jquery-1.11.1.js"></script>
+   <!-- <script src="js/jquery-1.11.1.js"></script>-->
     <script>
      cuser="";
       var socket = io();
       $('#setNick').submit(function(e){
         e.preventDefault();
-        socket.emit('new user', $('#nickname').val(),function(data){
+       var login={};
+       login.username=$('#nickname').val();
+       login.pass=$('#pass').val();
+       console.log(login);
+        socket.emit('new user', login,function(data){
         if(data){
         $('#nickWrap').hide();
         $('#contentWrap').show();
 		$('.emoji-picker-icon').show();
         }
         else{
-        $('#nickError').html('That username is already taken try again...');
+        $('#nickError').html('Enter valid login parameters...');
         }
         });
         $('#nickname').val('');
+        $('#pass').val('');
       });
        socket.on('cuser', function(data){
          window.cuser = data.cuser;
     console.log(data.cuser);
-      
+    $('#membercheck').empty();
+     $('#membercheck').append($('<li>').html('<span class="error">All users are allowed in this group you can add members only to your personal groups</span>'));
+     $('#userwrap').empty();
+    for(i=0;i<data.alluser.length;i++)
+    {
+      $('#userwrap').append($('<li>').html('<span class="error">'+data.alluser[i].nick+'</span>'));
+       
+    }
+      console.log(data.alluser);
      });
+      socket.on('membergroup', function(data){
+        $('#userwrap').empty();
+        $('#membercheck').empty();
+        $('#membercheck').append($('<li>').html('Current Members'));
+    for(var i=0;i<data.gdocs[0].members.length;i++)
+    {
+      $('#userwrap').append($('<li>').html('<span class="error">'+data.gdocs[0].members[i]+'</span>'));
+      $('#membercheck').append($('<li>').html('<label><input type="checkbox" class="checkbox" checked value='+data.gdocs[0].members[i]+'> '+ data.gdocs[0].members[i]+'</label>'));
+    }
+    var alluser = [];
+     $('#membercheck').append($('<br/><li>').html('Add Members'));
+    for(i=0;i<data.alluser.length;i++)
+    {
+          alluser[i]=data.alluser[i].nick;
+    }
+    var diff= $(alluser).not(data.gdocs[0].members).get();
+    for(i=0;i<diff.length;i++)
+    {
+          $('#membercheck').append($('<li>').html('<label><input type="checkbox" class="checkbox" value='+diff[i]+'> '+ diff[i]+'</label>'));
+    }
+     });  
 	  socket.on('usernames', function(data){
 		var html= '';
 		var pnick=$('#pnick');
-      /* for(i=0;i<data.users.length;i++)
-       {
-        console.log(window.cuser);
-        if(data.users[i]!=window.cuser)
-        html+= data.users[i]+'<br/>';
-       }*/
         $('#users').html('<b>Current User : </b>'+window.cuser);
 		pnick.empty();
+    pnick.append($("<option selected></option>")
+                    .attr("value","Select a user")
+                    .text("Select a user")); 
 		$.each(data.users, function(key, value) { 
 		     if(value!=window.cuser){
      pnick.append($("<option></option>")
                     .attr("value",value)
                     .text(value)); 
-					
-			}
+					}
 });
-    
-      });
+    });
+    socket.on('groupinfo', function(data){
+    var group=$('#group');
+    group.empty();
+    console.log(data);
+    group.append($("<option selected></option>")
+                    .attr("value","Common group")
+                    .text("Common group")); 
+   for(var i=0; i<data.length;i++) { 
+        
+     group.append($("<option></option>")
+                    .attr("value",data[i].groupname)
+                    .text(data[i].groupname)); 
+}
+    });
+    $('#newgroup').submit(function(data){
+      var newgroup;
+      newgroup = $('#newgroupname').val();
+       socket.emit('newgroup', newgroup,function(data){
+        $('#group-body').empty();
+    $('#group-body').append($('<li>').html('<span class="error">'+data+'</span>'));
+    });
+        return false;
+    });
+    $('#editgroup').submit(function(data){
+     var i = 0;
+     var groupname=$('#group').val();
+       var arr = [];
+       $('.checkbox:checked').each(function () {
+           arr[i++] = $(this).val();
+       }); 
+       socket.emit('editgroup', {groupname:groupname,members:arr},function(data){
+        $('#groupmembers-body').empty();
+    $('#groupmembers-body').append($('<li>').html('<span class="error">'+data+'</span>'));
+    });
+       console.log(arr);
+         return false;
+    });
+        
       $('#chatform').submit(function(data){
-        socket.emit('chat message', $('#m').val(),function(data){
+        var msg = {};
+        msg.groupname = $('#group').val();
+        msg.msg = $('#m').val();
+        socket.emit('chat message', msg,function(data){
 		$('#chat').append($('<li>').html('<span class="error">'+data+'</span>'));
-		$('#chat').scrollTop($('#chat')[0].scrollHeight);
+		$('#chat').stop().animate({
+  scrollTop: $('#chat')[0].scrollHeight
+}, 800);
 		});
         $('#m').val('');
         return false;
@@ -194,6 +388,7 @@
         displayMsg(data);
       });
 	  socket.on('load old msgs',function(docs){
+      $('#chat').empty();
 	  for(var i=0; i<docs.length ; i++)
 	  {
       if(docs[i].file===undefined){
@@ -220,6 +415,10 @@
     }
     }
     });
+    $('#group').on('change', function() {
+      console.log("group changed");
+       socket.emit("groupchange",$("#group").val());
+     });
     $('#pnick').on('change', function() {
       console.log("changed");
        socket.emit("changerequest");
@@ -270,7 +469,22 @@
         $('#pchat').append($('<li>').html('<span class="pwhisper"><b>'+data.nick+': </b>'+data.msg+'</span>'));
       });
 	  socket.on('base64 file', function(data){
-	    displayFile(docs[i]);
+	    if(data.fileType.split('/')[0]=='image')
+    {
+    console.log("image");
+    $('#chat').append($('<li>').html('<b>'+data.nick+': </b><br/>'+"<img src='"+data.file+"'height='200px' width='200px' alt="+data.fileName+">"));
+    $('#uploadfile').val('');
+    }
+    else if(data.fileType.split('/')[0]=='video')
+    {
+    console.log("image");
+    $('#chat').append($('<li>').html('<b>'+data.nick+': </b><br/>'+"<video controls src='"+data.file+"'height='200px' width='200px' alt="+data.fileName+">"));
+    $('#uploadfile').val('');
+    }
+    else{
+        $('#chat').append($('<li>').html('<b>'+data.nick+': </b>'+"<a target='_blank' download='" + data.fileName +"' href='"+data.file+"'>"+data.fileName+"</a>"));
+    $('#uploadfile').val('');
+    }
       });
 	  socket.on('pbase64 file', function(data){
 	  
@@ -296,6 +510,7 @@ $('#pchat').append($('<li>').html('<span class="error">'+data.error+'</span>'));
       });
 	  $('#uploadfile').bind('change', function(e){
     var data = e.originalEvent.target.files[0];
+    console.log(data);
     readThenSendFile(data);      
 });
 function readThenSendFile(data){
@@ -303,13 +518,62 @@ function readThenSendFile(data){
     var reader = new FileReader();
     reader.onload = function(evt){
         var msg ={};
+        msg.groupname = $('#group').val();
         msg.file = evt.target.result;
         msg.fileName = data.name;
 		msg.fileType=data.type;
         socket.emit('base64 file', msg);
+        $('#uploadfile').val('');
     };
     reader.readAsDataURL(data);
 }
+//Drag And Drop for common chatroom
+var obj = $("#dragandrophandler");
+obj.on('dragenter', function (e) 
+{
+    e.stopPropagation();
+    e.preventDefault();
+    $(this).css('border', '2px solid #0B85A1');
+});
+obj.on('dragover', function (e) 
+{
+     e.stopPropagation();
+     e.preventDefault();
+});
+obj.on('drop', function (e) 
+{
+ 
+     $(this).css('border', '2px dotted #0B85A1');
+     e.preventDefault();
+     var file = e.originalEvent.dataTransfer.files;
+     //We need to send dropped files to Server
+     console.log(file[0]);
+     readThenSendFile(file[0]);   
+});
+//Drag and drop for private chatroom
+var pobj = $("#pdragandrophandler");
+pobj.on('dragenter', function (e) 
+{
+    e.stopPropagation();
+    e.preventDefault();
+    $(this).css('border', '2px solid #0B85A1');
+});
+pobj.on('dragover', function (e) 
+{
+     e.stopPropagation();
+     e.preventDefault();
+});
+pobj.on('drop', function (e) 
+{
+ 
+     $(this).css('border', '2px dotted #0B85A1');
+     e.preventDefault();
+     var file = e.originalEvent.dataTransfer.files;
+     //We need to send dropped files to Server
+     console.log(file[0]);
+     preadThenSendFile(file[0]);   
+});
+
  $('#puploadfile').bind('change', function(e){
     var data = e.originalEvent.target.files[0];
     preadThenSendFile(data);      
