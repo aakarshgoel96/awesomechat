@@ -181,7 +181,11 @@ io.sockets.on('connection', function(socket){
     if (gdocs[0]!=undefined){
       user.find({},function(err,auth){
     if (err) throw err;
-    users[socket.nickname].emit('membergroup',{gdocs:gdocs,alluser:auth,cuser:socket.nickname, users:Object.keys(users)});
+    for(i=0;i<gdocs[0].members.length;i++)
+    {
+      if(gdocs[0].members[i] in users)
+    users[gdocs[0].members[i]].emit('membergroup',{gdocs:gdocs,alluser:auth,cuser:socket.nickname, users:Object.keys(users)});
+  }
   });
     }
   });
@@ -228,6 +232,10 @@ io.sockets.on('connection', function(socket){
  function updateNicknames(){
 
  io.sockets.emit('usernames', { users:Object.keys(users)});
+  user.find({},function(err,auth){
+    if (err) throw err;
+      io.sockets.emit('updatenick', {users:Object.keys(users),alluser:auth});
+    });
  
 }
   socket.on('chat message', function(data,callback){
@@ -264,14 +272,22 @@ io.sockets.on('connection', function(socket){
   socket.on('pchat message', function(data,callback){
 	  var pmsg=data.pmsg.trim();
 	  var pnick=data.pnick.trim();
-	          if(pmsg=='')
+    autharr=[];
+	           user.find({},function(err,auth){
+              for(var i=0;i<auth.length;i++)
+              {
+                autharr[i]=auth[i].nick;
+              }
+    if (err) throw err;
+            if(pmsg=='')
 			  {
 				callback("Error: Enter a message to send");  
 			  }
-	          else if(pnick in users && pnick!=socket.nickname){
+	          else if(autharr.indexOf(pnick)>-1 && pnick!=socket.nickname){
               var newpMsg = new pchat({msg: pmsg, nickfrom:socket.nickname, nickto:pnick});
              newpMsg.save(function(err){
                if (err) throw err;
+               if(pnick in users)
 				  users[pnick].emit('pwhisper', {msg:pmsg,nick:socket.nickname});
 				   users[socket.nickname].emit('pwhisper', {msg:pmsg,nick:'You'});
 		       console.log("Whisper");
@@ -284,7 +300,7 @@ io.sockets.on('connection', function(socket){
 			  else{
 				  callback("Error: Enter a valid user");
 			  }
-	  
+	  });
 	   });
   socket.on('disconnect', function(data){
    if(!socket.nickname)return;
@@ -336,25 +352,26 @@ io.sockets.on('connection', function(socket){
   }
 });
   });
+ 
+    
 socket.on('pbase64 file', function (msg) {
     console.log('received base64 file from');
 	console.log(msg.fileName);
 	console.log(msg.pnick);
     //socket.username = msg.username;
     // socket.broadcast.emit('base64 image', //exclude sender
-	if(msg.pnick in users && msg.pnick!=socket.nickname){
+    autharr=[];
+             user.find({},function(err,auth){
+              for(var i=0;i<auth.length;i++)
+              {
+                autharr[i]=auth[i].nick;
+              }
+    if (err) throw err;
+	if(autharr.indexOf(msg.pnick)>-1 && msg.pnick!=socket.nickname){
     var newpFile = new pchat({file: msg.file,fileName:msg.fileName,fileType:msg.fileType,nickfrom:socket.nickname,nickto:msg.pnick});
     newpFile.save(function(err){
     if (err) throw err;
-   users[msg.pnick].emit('pbase64 file',  //include sender
-
-        { pnick:msg.pnick,
-          username: socket.nickname,
-          file: msg.file,
-          fileName: msg.fileName,
-		  fileType: msg.fileType
-		  
-        });
+    
    users[socket.nickname].emit('pbase64 file',  //include sender
 
         { 
@@ -364,6 +381,17 @@ socket.on('pbase64 file', function (msg) {
           fileName: msg.fileName,
 		  fileType: msg.fileType
         });
+   if(msg.pnick in users){
+   users[msg.pnick].emit('pbase64 file',  //include sender
+
+        { pnick:msg.pnick,
+          username: socket.nickname,
+          file: msg.file,
+          fileName: msg.fileName,
+      fileType: msg.fileType
+      
+        });
+      }
    });
 	}
 	else if(msg.pnick==socket.nickname)
@@ -373,6 +401,7 @@ socket.on('pbase64 file', function (msg) {
 	else{
 		users[socket.nickname].emit('fileerror', {error:'Enter valid user name'});
 	}
+});
 });
 });
 //Database Connection

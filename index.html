@@ -44,6 +44,7 @@ padding:10px 10px 10 10px;
 margin-bottom:10px;
 font-size:200%;
 }
+.online{color:green;}
 	  .error{color:red;}
 	  .whisper{color:gray;font-style:italic;}
   .loader {
@@ -272,25 +273,91 @@ $(document).on('drop', function (e)
         $('#pass').val('');
       });
        socket.on('cuser', function(data){
+        alluser=[];
          window.cuser = data.cuser;
     console.log(data.cuser);
     $('#membercheck').empty();
      $('#membercheck').append($('<li>').html('<span class="error">All users are allowed in this group you can add members only to your personal groups</span>'));
      $('#userwrap').empty();
     for(i=0;i<data.alluser.length;i++)
-    {
-      $('#userwrap').append($('<li>').html('<span class="error">'+data.alluser[i].nick+'</span>'));
+    { 
+      if(data.alluser[i].nick==window.cuser )
+      $('#userwrap').append($('<li>').html('<span class="online">'+data.alluser[i].nick+'(You)</span>'));
+      else if(data.users.indexOf(data.alluser[i].nick)>-1)
+        $('#userwrap').append($('<li>').html('<span class="online">'+data.alluser[i].nick+'</span>'));
+      else
+        $('#userwrap').append($('<li>').html('<span class="error">'+data.alluser[i].nick+'</span>'));
+      alluser[i]=data.alluser[i].nick;
        
     }
-      console.log(data.alluser);
+    allnick=$("#pnick");
+    allnick.empty();
+    console.log(data.users);
+     allnick.append($("<option selected></option>")
+                    .attr("value","Select a user")
+                    .text("Select a user")); 
+    $.each(alluser, function(key, value) { 
+         if(value!=window.cuser && data.users.indexOf(value)>-1){
+     allnick.append($("<option class='online'></option>")
+                    .attr("value",value)
+                    .text(value+"(Online)")); 
+   }
+          else if(value!=window.cuser){
+             allnick.append($("<option class='online'></option>")
+                    .attr("value",value)
+                    .text(value));
+          
+          }
+});
      });
+       socket.on('updatenick',function(data)
+       {
+        alluser=[];
+         $('#userwrap').empty();
+    for(i=0;i<data.alluser.length;i++)
+    { 
+      if(data.alluser[i].nick==window.cuser )
+      $('#userwrap').append($('<li>').html('<span class="online">'+data.alluser[i].nick+'(You)</span>'));
+      else if(data.users.indexOf(data.alluser[i].nick)>-1)
+        $('#userwrap').append($('<li>').html('<span class="online">'+data.alluser[i].nick+'</span>'));
+      else
+        $('#userwrap').append($('<li>').html('<span class="error">'+data.alluser[i].nick+'</span>'));
+      alluser[i]=data.alluser[i].nick;
+       
+    }
+    allnick=$("#pnick");
+    allnick.empty();
+    console.log(data.users);
+     allnick.append($("<option selected></option>")
+                    .attr("value","Select a user")
+                    .text("Select a user")); 
+    $.each(alluser, function(key, value) { 
+         if(value!=window.cuser && data.users.indexOf(value)>-1){
+     allnick.append($("<option class='online'></option>")
+                    .attr("value",value)
+                    .text(value+"(Online)")); 
+   }
+          else if(value!=window.cuser){
+             allnick.append($("<option class='online'></option>")
+                    .attr("value",value)
+                    .text(value));
+          
+          }
+});
+       });
       socket.on('membergroup', function(data){
         $('#userwrap').empty();
         $('#membercheck').empty();
         $('#membercheck').append($('<li>').html('Current Members'));
     for(var i=0;i<data.gdocs[0].members.length;i++)
     {
-      $('#userwrap').append($('<li>').html('<span class="error">'+data.gdocs[0].members[i]+'</span>'));
+      if(data.gdocs[0].members[i]==window.cuser )
+      $('#userwrap').append($('<li>').html('<span class="online">'+data.gdocs[0].members[i]+'(You)</span>'));
+      else if(data.users.indexOf(data.gdocs[0].members[i])>-1)
+        $('#userwrap').append($('<li>').html('<span class="online">'+data.gdocs[0].members[i]+'</span>'));
+      else
+        $('#userwrap').append($('<li>').html('<span class="error">'+data.gdocs[0].members[i]+'</span>'));
+     // $('#userwrap').append($('<li>').html('<span class="error">'+data.gdocs[0].members[i]+'</span>'));
       $('#membercheck').append($('<li>').html('<label><input type="checkbox" class="checkbox" checked value='+data.gdocs[0].members[i]+'> '+ data.gdocs[0].members[i]+'</label>'));
     }
     var alluser = [];
@@ -309,17 +376,6 @@ $(document).on('drop', function (e)
 		var html= '';
 		var pnick=$('#pnick');
         $('#users').html('<b>Current User : </b>'+window.cuser);
-		pnick.empty();
-    pnick.append($("<option selected></option>")
-                    .attr("value","Select a user")
-                    .text("Select a user")); 
-		$.each(data.users, function(key, value) { 
-		     if(value!=window.cuser){
-     pnick.append($("<option></option>")
-                    .attr("value",value)
-                    .text(value)); 
-					}
-});
     });
     socket.on('groupinfo', function(data){
     var group=$('#group');
